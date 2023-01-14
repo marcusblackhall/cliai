@@ -1,6 +1,7 @@
 package com.ilovecoding.aicli;
 
 import com.ilovecoding.aicli.model.AiRequest;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class FetchData {
         HttpResponse<String> response = HttpClient.newHttpClient().send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
-            formResponse(response.body());
+            System.out.println(formError(response.body()));
             return 4;
         }
 
@@ -39,16 +40,30 @@ public class FetchData {
         return 0;
     }
 
+    private String formError(String body) {
+        JSONObject jsonObject = new JSONObject(body);
+        JSONObject errorObject = (JSONObject) jsonObject.get("error");
+        return (String) errorObject.get("message");
+    }
+
     private void formResponse(String body) {
 
         JSONObject jsonObject = new JSONObject(body);
-        System.out.println(jsonObject.toString(5));
+
+        JSONArray array = (JSONArray) jsonObject.get("choices");
+        if (array.isEmpty()) {
+            System.out.println("No text is available");
+            return;
+        }
+
+        JSONObject firstOption = (JSONObject) array.get(0);
+        String text = (String) firstOption.get("text");
+        text = text.replace("\\n", "\\`");
+        System.out.println(text);
 
     }
 
     private String aiRequestAsJson(AiRequest aiRequest) {
-
-
         return createJsonFromRequest.aiRequestAsJson(aiRequest);
     }
 

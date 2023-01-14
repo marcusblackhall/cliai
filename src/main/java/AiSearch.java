@@ -57,11 +57,6 @@ public class AiSearch implements Callable<Integer> {
             System.out.println(CommandLine.Help.Ansi.AUTO.string(line));
         }
 
-        System.out.println("Prompt is " + prompt);
-        System.out.println(CommandLine.Help.Ansi.AUTO.string("@|fg(red) Model|@ is " + model));
-        System.out.println("Frequency penalty is " + frequencyPenalty);
-        System.out.println("Max tokens is " + maxTokens);
-
         return new FetchData().execute(prepareRequest());
 
     }
