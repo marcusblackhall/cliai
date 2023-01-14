@@ -31,7 +31,7 @@ public class FetchData {
 
         HttpResponse<String> response = HttpClient.newHttpClient().send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
-        if (response.statusCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+        if (response.statusCode() != HttpURLConnection.HTTP_OK) {
             System.out.println(formError(response.body()));
             return 4;
         }
@@ -49,11 +49,15 @@ public class FetchData {
     private void formResponse(String body) {
 
         JSONObject jsonObject = new JSONObject(body);
+        Object choices = jsonObject.get("choices");
 
-        JSONArray array = (JSONArray) jsonObject.get("choices");
-        if (array.isEmpty()) {
-            System.out.println("No text is available");
-            return;
+        JSONArray array = null;
+        if (choices != null) {
+            array = (JSONArray) choices;
+            if (array.isEmpty()) {
+                System.out.println("No text is available");
+                return;
+            }
         }
 
         JSONObject firstOption = (JSONObject) array.get(0);
@@ -61,10 +65,6 @@ public class FetchData {
         text = text.replace("\\n", "\\`");
         System.out.println(text);
 
-    }
-
-    private String aiRequestAsJson(AiRequest aiRequest) {
-        return createJsonFromRequest.aiRequestAsJson(aiRequest);
     }
 
     private static String getAuthBearer() {
