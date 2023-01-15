@@ -21,3 +21,7 @@ To create a windows executable using GraalVm execute
 ```shell
 mvn package -Pnative
 ```
+
+## Screen recording of usage
+
+[![asciicast](https://asciinema.org/a/551799.svg)](https://asciinema.org/a/551799)
