@@ -3,6 +3,7 @@ package com.ilovecoding.aicli;
 import com.ilovecoding.aicli.model.AiRequest;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import picocli.CommandLine;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -11,6 +12,7 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Spliterator;
 
 
 public class FetchData {
@@ -43,6 +45,7 @@ public class FetchData {
     private String formError(String body) {
         JSONObject jsonObject = new JSONObject(body);
         JSONObject errorObject = (JSONObject) jsonObject.get("error");
+        System.out.println(CommandLine.Help.Ansi.AUTO.string( "@|red,underline Error Message |@"));
         return (String) errorObject.get("message");
     }
 
@@ -59,11 +62,17 @@ public class FetchData {
                 return;
             }
         }
+        Spliterator<Object> spliterator = array.spliterator();
+        spliterator.forEachRemaining(r -> {
+            JSONObject firstOption = (JSONObject) r;
+            System.out.println(CommandLine.Help.Ansi.AUTO.string( "@|green,underline Response |@"));
+            String text = (String) firstOption.get("text");
+            text = text.replace("\\n", "\\`");
+            System.out.println(text);
 
-        JSONObject firstOption = (JSONObject) array.get(0);
-        String text = (String) firstOption.get("text");
-        text = text.replace("\\n", "\\`");
-        System.out.println(text);
+        });
+
+
 
     }
 
