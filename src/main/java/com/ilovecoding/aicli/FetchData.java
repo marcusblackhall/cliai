@@ -17,15 +17,18 @@ import java.util.Spliterator;
 
 public class FetchData {
 
+    private String aiUrl;
+
     private final CreateJsonFromRequest createJsonFromRequest = new CreateJsonFromRequest();
-    public static final String AI_URL = "https://api.openai.com/v1/completions";
+
 
     public int execute(AiRequest aiRequest) throws IOException, URISyntaxException, InterruptedException {
 
         String requestAsJson = createJsonFromRequest.aiRequestAsJson(aiRequest);
 
+
         HttpRequest httpRequest =
-                HttpRequest.newBuilder(new URI(AI_URL))
+                HttpRequest.newBuilder(getAiUrl())
                         .header("Authorization", getAuthBearer())
                         .header("Content-Type", "application/json")
                         .POST(HttpRequest.BodyPublishers.ofString(requestAsJson))
@@ -34,7 +37,9 @@ public class FetchData {
         HttpResponse<String> response = HttpClient.newHttpClient().send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != HttpURLConnection.HTTP_OK) {
-            System.out.println(formError(response.body()));
+            if (response.body() != null && ! response.body().isEmpty()) {
+                System.out.println(formError(response.body()));
+            }
             return 4;
         }
 
@@ -43,7 +48,7 @@ public class FetchData {
     }
 
     private String formError(String body) {
-        JSONObject jsonObject = new JSONObject(body);
+        JSONObject jsonObject = new     JSONObject(body);
         JSONObject errorObject = (JSONObject) jsonObject.get("error");
         System.out.println(CommandLine.Help.Ansi.AUTO.string( "@|red,underline Error Message |@"));
         return (String) errorObject.get("message");
@@ -81,5 +86,15 @@ public class FetchData {
         return "Bearer " + aiApiKey;
 
 
+    }
+
+    public URI getAiUrl() throws URISyntaxException {
+
+        return new URI(this.aiUrl);
+
+    }
+
+    public void setAiUrl(String aiUrl) {
+        this.aiUrl = aiUrl;
     }
 }

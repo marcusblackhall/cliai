@@ -8,12 +8,12 @@ you have in your OpenAi account.
 To display help on how to run the app type the following in a command line
 
 ```shell
-java -jar target/aicli.jar -h 
+java -jar target/askai.jar -h 
 ```
 
 ## Example usage 
 ```shell 
-java -jar target/aicli.jar -p "Suggest the best snooker players of all time"
+java -jar target/askai.jar -p "Suggest the best snooker players of all time"
 ```
 ## Create an executable
 To create a windows executable using GraalVm execute

@@ -1,6 +1,7 @@
 package com.ilovecoding;
 
 import com.ilovecoding.aicli.FetchData;
+import com.ilovecoding.aicli.config.AiProperties;
 import com.ilovecoding.aicli.model.AiRequest;
 import com.ilovecoding.aicli.model.AiRequestBuilder;
 import picocli.CommandLine;
@@ -8,7 +9,7 @@ import picocli.CommandLine;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "aisearch",
-        header = {"""
+        header = {"""   
             
                    █████████           █████           █████████    ███\s
                   ███░░░░░███         ░░███           ███░░░░░███  ░░░ \s
@@ -59,8 +60,9 @@ public class AiSearch implements Callable<Integer> {
         for (String line : banner) {
             System.out.println(CommandLine.Help.Ansi.AUTO.string(line));
         }
-
-        return new FetchData().execute(prepareRequest());
+        FetchData fetchData = new FetchData();
+        fetchData.setAiUrl(AiProperties.aiUrl());
+        return fetchData.execute(prepareRequest());
 
     }
 
