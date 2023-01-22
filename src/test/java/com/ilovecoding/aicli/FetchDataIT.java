@@ -3,7 +3,7 @@ package com.ilovecoding.aicli;
 import com.ilovecoding.aicli.model.AiRequest;
 import com.ilovecoding.aicli.model.AiRequestBuilder;
 import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Test;
 import org.mockserver.client.MockServerClient;
 import org.testcontainers.containers.MockServerContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -24,42 +24,34 @@ class FetchDataIT {
             .withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion());
 
     @Container
-    private MockServerContainer mockServer = new MockServerContainer(MOCK_SERVER_IMAGE);
+    private static MockServerContainer mockServer = new MockServerContainer(MOCK_SERVER_IMAGE);
 
-
-    @BeforeEach
-    void setUp() {
-
-        mockServer.start();
-    }
-
-    @AfterEach
-    void tearDown() {
-
-        mockServer.stop();
-    }
 
     @Test
     void shouldReturnExitCode0IfSuccessful() throws IOException, URISyntaxException, InterruptedException {
 
-        MockServerClient mockServerClient = new MockServerClient(mockServer.getHost(), mockServer.getServerPort());
 
-        FetchData fetchData = new FetchData();
-        fetchData.setAiUrl("http://" + mockServer.getHost() + ":" + mockServer.getServerPort());
-
-        AiRequest aiRequest = new AiRequestBuilder()
-                .setPrompt("Top 10 snooker players")
-                .createAiRequest();
-
-        mockServerClient.when(request()
-                        .withMethod("POST"))
-                .respond(response().withBody(getTestBody())
-                        .withStatusCode(HttpStatus.SC_OK)
-                );
+        try (MockServerClient mockServerClient = new MockServerClient(mockServer.getHost(), mockServer.getServerPort()).reset()) {
 
 
-        int execute = fetchData.execute(aiRequest);
-        assertEquals(0, execute);
+            FetchData fetchData = new FetchData();
+            fetchData.setAiUrl("http://" + mockServer.getHost() + ":" + mockServer.getServerPort());
+
+            AiRequest aiRequest = new AiRequestBuilder()
+                    .setPrompt("Top 10 snooker players")
+                    .createAiRequest();
+
+            mockServerClient.when(request()
+                            .withMethod("POST"))
+                    .respond(response().withBody(getTestBody())
+                            .withStatusCode(HttpStatus.SC_OK)
+                    );
+
+
+            int execute = fetchData.execute(aiRequest);
+            assertEquals(0, execute);
+
+        }
 
 
     }
@@ -67,25 +59,29 @@ class FetchDataIT {
     @Test
     void shouldReturnExitCode4IfResponseIsInvalid() throws IOException, URISyntaxException, InterruptedException {
 
-        MockServerClient mockServerClient = new MockServerClient(mockServer.getHost(), mockServer.getServerPort());
 
-        FetchData fetchData = new FetchData();
-        fetchData.setAiUrl("http://" + mockServer.getHost() + ":" + mockServer.getServerPort());
+        try (MockServerClient mockServerClient = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())) {
 
-        AiRequest aiRequest = new AiRequestBuilder()
-                .setPrompt("Top 10 snooker players")
-                .createAiRequest();
+            FetchData fetchData = new FetchData();
+            fetchData.setAiUrl("http://" + mockServer.getHost() + ":" + mockServer.getServerPort() + "/ai/completions");
 
-        mockServerClient.when(request()
-                        .withMethod("POST"))
-                .respond(response()
-                        .withStatusCode(HttpStatus.SC_NOT_FOUND)
+            AiRequest aiRequest = new AiRequestBuilder()
+                    .setPrompt("Top 10 snooker players")
+                    .createAiRequest();
 
-                );
+            mockServerClient.when(request()
+                            .withMethod("POST"))
+                    .respond(response()
+                            .withStatusCode(HttpStatus.SC_NOT_FOUND)
+
+                    );
 
 
-        int execute = fetchData.execute(aiRequest);
-        assertEquals(4, execute);
+            int execute = fetchData.execute(aiRequest);
+            mockServerClient.verify(request().withHeader("Authorization"));
+            assertEquals(4, execute);
+
+        }
 
 
     }
