@@ -1,5 +1,6 @@
 package com.ilovecoding.aicli;
 
+import com.ilovecoding.aicli.config.AiProperties;
 import com.ilovecoding.aicli.model.AiRequest;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -89,7 +90,9 @@ public class FetchData {
     }
 
     public URI getAiUrl() throws URISyntaxException {
-
+       if (this.aiUrl == null ){
+           aiUrl = AiProperties.aiUrl();
+       }
         return new URI(this.aiUrl);
 
     }

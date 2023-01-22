@@ -1,7 +1,6 @@
 package com.ilovecoding;
 
 import com.ilovecoding.aicli.FetchData;
-import com.ilovecoding.aicli.config.AiProperties;
 import com.ilovecoding.aicli.model.AiRequest;
 import com.ilovecoding.aicli.model.AiRequestBuilder;
 import picocli.CommandLine;
@@ -10,7 +9,7 @@ import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "aisearch",
         header = {"""   
-            
+                            
                    █████████           █████           █████████    ███\s
                   ███░░░░░███         ░░███           ███░░░░░███  ░░░ \s
                  ░███    ░███   █████  ░███ █████    ░███    ░███  ████\s
@@ -31,23 +30,23 @@ import java.util.concurrent.Callable;
 )
 public class AiSearch implements Callable<Integer> {
 
-    @CommandLine.Option(names = {"-p", "--prompt" }, required = true)
+    @CommandLine.Option(names = {"-p", "--prompt"}, required = true)
     private String prompt;
 
-    @CommandLine.Option(names = {"-t", "--maxTokens" }, required = true, defaultValue = "150", type = Integer.class)
+    @CommandLine.Option(names = {"-t", "--maxTokens"}, required = true, defaultValue = "150", type = Integer.class)
     private Integer maxTokens;
 
-    @CommandLine.Option(names = {"-m", "--model" }, defaultValue = "text-davinci-003")
+    @CommandLine.Option(names = {"-m", "--model"}, defaultValue = "text-davinci-003")
     String model;
 
-    @CommandLine.Option(names = {"-pen", "--penalty" }, defaultValue = "0.0")
+    @CommandLine.Option(names = {"-pen", "--penalty"}, defaultValue = "0.0")
     private Double prescencePenalty;
 
-    @CommandLine.Option(names = {"-topP", "--topP" }, defaultValue = "1.0")
+    @CommandLine.Option(names = {"-topP", "--topP"}, defaultValue = "1.0")
     private Double topP;
 
 
-    @CommandLine.Option(names = {"-f", "--frequency" }, defaultValue = "0.0")
+    @CommandLine.Option(names = {"-f", "--frequency"}, defaultValue = "0.0")
     private Double frequencyPenalty;
 
     @CommandLine.Spec
@@ -60,9 +59,8 @@ public class AiSearch implements Callable<Integer> {
         for (String line : banner) {
             System.out.println(CommandLine.Help.Ansi.AUTO.string(line));
         }
-        FetchData fetchData = new FetchData();
-        fetchData.setAiUrl(AiProperties.aiUrl());
-        return fetchData.execute(prepareRequest());
+
+        return new FetchData().execute(prepareRequest());
 
     }
 

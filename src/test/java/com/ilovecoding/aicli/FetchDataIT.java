@@ -3,8 +3,12 @@ package com.ilovecoding.aicli;
 import com.ilovecoding.aicli.model.AiRequest;
 import com.ilovecoding.aicli.model.AiRequestBuilder;
 import org.apache.http.HttpStatus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockserver.client.MockServerClient;
+import org.mockserver.proxyconfiguration.ProxyConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MockServerContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -19,20 +23,25 @@ import static org.mockserver.model.HttpResponse.response;
 
 @Testcontainers
 class FetchDataIT {
+    Logger logger = LoggerFactory.getLogger(FetchDataIT.class);
     private static final DockerImageName MOCK_SERVER_IMAGE = DockerImageName
             .parse("mockserver/mockserver")
             .withTag("mockserver-" + MockServerClient.class.getPackage().getImplementationVersion());
 
     @Container
-    private static MockServerContainer mockServer = new MockServerContainer(MOCK_SERVER_IMAGE);
+    MockServerContainer mockServer = new MockServerContainer(MOCK_SERVER_IMAGE).withReuse(true);
 
 
+    @BeforeEach
+    void viewServer(){
+       logger.info("Server running {}", mockServer.isRunning());
+
+    }
     @Test
     void shouldReturnExitCode0IfSuccessful() throws IOException, URISyntaxException, InterruptedException {
 
 
         try (MockServerClient mockServerClient = new MockServerClient(mockServer.getHost(), mockServer.getServerPort()).reset()) {
-
 
             FetchData fetchData = new FetchData();
             fetchData.setAiUrl("http://" + mockServer.getHost() + ":" + mockServer.getServerPort());
@@ -40,7 +49,9 @@ class FetchDataIT {
             AiRequest aiRequest = new AiRequestBuilder()
                     .setPrompt("Top 10 snooker players")
                     .createAiRequest();
-
+            ProxyConfiguration proxyConfig =ProxyConfiguration
+                    .proxyConfiguration(ProxyConfiguration.Type.HTTPS,"api.openai.com/v1/completions:8080");
+            mockServerClient.withProxyConfiguration(proxyConfig);
             mockServerClient.when(request()
                             .withMethod("POST"))
                     .respond(response().withBody(getTestBody())
@@ -60,10 +71,10 @@ class FetchDataIT {
     void shouldReturnExitCode4IfResponseIsInvalid() throws IOException, URISyntaxException, InterruptedException {
 
 
-        try (MockServerClient mockServerClient = new MockServerClient(mockServer.getHost(), mockServer.getServerPort())) {
+        try (MockServerClient mockServerClient = new MockServerClient(mockServer.getHost(), mockServer.getServerPort()).reset()) {
 
             FetchData fetchData = new FetchData();
-            fetchData.setAiUrl("http://" + mockServer.getHost() + ":" + mockServer.getServerPort() + "/ai/completions");
+            fetchData.setAiUrl("http://" + mockServer.getHost() + ":" + mockServer.getServerPort());
 
             AiRequest aiRequest = new AiRequestBuilder()
                     .setPrompt("Top 10 snooker players")
