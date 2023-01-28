@@ -28,17 +28,12 @@ public class FetchData {
         String requestAsJson = createJsonFromRequest.aiRequestAsJson(aiRequest);
 
 
-        HttpRequest httpRequest =
-                HttpRequest.newBuilder(getAiUrl())
-                        .header("Authorization", getAuthBearer())
-                        .header("Content-Type", "application/json")
-                        .POST(HttpRequest.BodyPublishers.ofString(requestAsJson))
-                        .build();
+        HttpRequest httpRequest = createRequest(requestAsJson);
 
         HttpResponse<String> response = HttpClient.newHttpClient().send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != HttpURLConnection.HTTP_OK) {
-            if (response.body() != null && ! response.body().isEmpty()) {
+            if (response.body() != null && !response.body().isEmpty()) {
                 System.out.println(formError(response.body()));
             }
             return 4;
@@ -48,10 +43,18 @@ public class FetchData {
         return 0;
     }
 
+    private HttpRequest createRequest(String requestAsJson) throws URISyntaxException {
+        return HttpRequest.newBuilder(getAiUrl())
+                .header("Authorization", getAuthBearer())
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(requestAsJson))
+                .build();
+    }
+
     private String formError(String body) {
-        JSONObject jsonObject = new     JSONObject(body);
+        JSONObject jsonObject = new JSONObject(body);
         JSONObject errorObject = (JSONObject) jsonObject.get("error");
-        System.out.println(CommandLine.Help.Ansi.AUTO.string( "@|red,underline Error Message |@"));
+        System.out.println(CommandLine.Help.Ansi.AUTO.string("@|red,underline Error Message |@"));
         return (String) errorObject.get("message");
     }
 
@@ -71,13 +74,12 @@ public class FetchData {
         Spliterator<Object> spliterator = array.spliterator();
         spliterator.forEachRemaining(r -> {
             JSONObject firstOption = (JSONObject) r;
-            System.out.println(CommandLine.Help.Ansi.AUTO.string( "@|green,underline Response |@"));
+            System.out.println(CommandLine.Help.Ansi.AUTO.string("@|green,underline Response |@"));
             String text = (String) firstOption.get("text");
             text = text.replace("\\n", "\\`");
             System.out.println(text);
 
         });
-
 
 
     }
@@ -90,9 +92,9 @@ public class FetchData {
     }
 
     public URI getAiUrl() throws URISyntaxException {
-       if (this.aiUrl == null ){
-           aiUrl = AiProperties.aiUrl();
-       }
+        if (this.aiUrl == null) {
+            aiUrl = AiProperties.aiUrl();
+        }
         return new URI(this.aiUrl);
 
     }

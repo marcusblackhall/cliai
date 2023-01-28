@@ -3,6 +3,7 @@ package com.ilovecoding;
 import com.ilovecoding.aicli.FetchData;
 import com.ilovecoding.aicli.model.AiRequest;
 import com.ilovecoding.aicli.model.AiRequestBuilder;
+import com.ilovecoding.aicli.spinner.SpinningLine;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
@@ -60,7 +61,13 @@ public class AiSearch implements Callable<Integer> {
             System.out.println(CommandLine.Help.Ansi.AUTO.string(line));
         }
 
-        return new FetchData().execute(prepareRequest());
+        SpinningLine spinningLine = new SpinningLine();
+        spinningLine.start();
+        Thread thread = new Thread(spinningLine);
+        thread.start();
+        int result = new FetchData().execute(prepareRequest());
+        spinningLine.stop();
+        return result;
 
     }
 
